@@ -1,0 +1,89 @@
+# Ambiente virtual
+venv/
+env/
+ENV/
+.venv
+
+# Cache do Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Distribuição
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Ambiente
+.env
+.env.local
+.env.*.local
+.env.production
+
+# FFmpeg (instalado no Docker)
+ffmpeg/
+ffmpeg-master-latest-win64-gpl/
+
+# Uploads e exports
+uploads/*
+!uploads/.gitkeep
+exports/*
+!exports/.gitkeep
+logs/*
+!logs/.gitkeep
+
+# Arquivos de teste
+test_files/
+test_*.txt
+test_*.pdf
+test_*.csv
+test_*.xlsx
+test_*.png
+test_*.jpg
+test_*.docx
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Docker images e containers (locais)
+*.tar
+*.tar.gz
+conversor-am-v2.0.1.tar
+
+# Arquivos de sistema
+*.log
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Temporários
+*.tmp
+temp/
+.tmp/
+
+# RDS
+/rds/

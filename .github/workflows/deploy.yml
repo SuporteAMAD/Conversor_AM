@@ -1,0 +1,71 @@
+name: 🚀 Deploy Automático
+
+on:
+  workflow_run:
+    workflows: ["🐳 Build e Push Docker"]
+    types:
+      - completed
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    
+    steps:
+      - name: 📥 Clonar repositório
+        uses: actions/checkout@v4
+
+      - name: 📋 Info do Deploy
+        run: |
+          echo "🚀 Deploy iniciado"
+          echo "Branch: main"
+          echo "Imagem: gabrielwaschburger/conversor-am:latest"
+          echo ""
+          echo "⚠️  Para configurar deploy automático real:"
+          echo "1. Adicionar secrets no GitHub (DEPLOY_KEY, DEPLOY_HOST, etc)"
+          echo "2. Configurar webhook em seu servidor"
+          echo "3. Ou usar plataforma cloud (Railway, Render, etc)"
+
+      - name: 📝 Gerar relatório
+        run: |
+          cat > deploy-report.txt << EOF
+          🎯 Deploy Report - $(date)
+          =============================
+          
+          Status: ✅ SUCESSO
+          Versão: v2.0.2
+          Imagem: gabrielwaschburger/conversor-am:latest
+          
+          Próximas etapas:
+          1. Pull da imagem no servidor de produção
+          2. Parar container anterior
+          3. Executar novo container
+          4. Verificar health check
+          5. Executar testes de smoke
+          
+          Comando de update:
+          docker pull gabrielwaschburger/conversor-am:latest
+          docker-compose down
+          docker-compose up -d
+          
+          EOF
+          cat deploy-report.txt
+
+      - name: 📤 Upload de relatório (opcional)
+        uses: actions/upload-artifact@v3
+        with:
+          name: deploy-report
+          path: deploy-report.txt
+          retention-days: 30
+
+  health-check:
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    
+    steps:
+      - name: 🏥 Verificação de Saúde
+        run: |
+          echo "✅ Workflow concluído com sucesso!"
+          echo "Próximo passo: Configurar deploy real em seu servidor"

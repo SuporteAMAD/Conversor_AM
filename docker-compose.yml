@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  conversor-am:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: conversor-am
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - FLASK_SECRET=${FLASK_SECRET:-seu-secret-aqui}
+      - SERVER_ID=${SERVER_ID:-docker-01}
+    volumes:
+      - ./uploads:/app/uploads
+      - ./exports:/app/exports
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    networks:
+      - conversor-network
+
+networks:
+  conversor-network:
+    driver: bridge
+
+# Usar com:
+# docker-compose up -d          (Iniciar em background)
+# docker-compose down           (Parar)
+# docker-compose logs -f        (Ver logs)
+# docker-compose ps             (Status)
