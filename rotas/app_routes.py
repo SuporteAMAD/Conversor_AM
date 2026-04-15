@@ -309,6 +309,7 @@ HOME_HTML = """
         <div class="header">
             <h1>Conversor de Arquivos AM</h1>
             <p>Ferramenta profissional de conversão de arquivos</p>
+            <p style="margin-top: 15px; font-size: 1.2em; font-weight: 600; letter-spacing: 1px;">✅ Tudo local, tudo seguro.</p>
         </div>
 
         <div class="main-content">
