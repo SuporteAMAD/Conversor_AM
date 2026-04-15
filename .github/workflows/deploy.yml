@@ -54,7 +54,7 @@ jobs:
           cat deploy-report.txt
 
       - name: 📤 Upload de relatório (opcional)
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: deploy-report
           path: deploy-report.txt
