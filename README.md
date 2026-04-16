@@ -2,25 +2,65 @@
 
 [![Build Status](https://github.com/gabrielwaschburger/conversor-am/workflows/%F0%9F%90%B3%20Build%20e%20Push%20Docker/badge.svg)](https://github.com/gabrielwaschburger/conversor-am/actions)
 [![Docker Hub](https://img.shields.io/badge/docker%20hub-gabrielwaschburger%2Fconversor--am-blue)](https://hub.docker.com/r/gabrielwaschburger/conversor-am)
-[![Version](https://img.shields.io/badge/version-2.0.2-green)](./CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.1.0-green)](./RELEASE_2.1.0.md)
+[![Formatos](https://img.shields.io/badge/formatos-100%2B-orange)](./GUIA_USUARIO_v2.1.0.md)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
-Ferramenta interna de conversão de arquivos para escritório Andrade Maia - **Expansão Convertio-like**.
+Ferramenta interna de conversão de arquivos para escritório Andrade Maia - **100+ Formatos Suportados** 🚀
 
-## ✨ Novidades v2.0.2
+## ✨ Novidades v2.1.0 (16/04/2026)
 
-- ✅ **Publicado no Docker Hub**: Imagem pronta para produção
-- 🔄 **GitHub Actions CI/CD**: Build, testes e deploy automáticos
-- 🐳 **Docker Production Ready**: Gunicorn com 4 workers
-- 📦 **Versioning Semântico**: Tags automáticas em releases
-- 🎨 **Nova Interface**: Tema profissional preto e laranja
-- 📊 **Barra de Progresso**: Visualização em tempo real
-- ⬇️ **Download Integrado**: Botão direto para baixar conversões
-- 📱 **Design Responsivo**: Otimizado para todos os dispositivos
+- 🎉 **100+ Formatos Suportados**: Expansão massiva de capacidades
+  - 🎵 **Áudio**: 20 formatos (MP3, WAV, FLAC, AAC, M4A, OGG, OPUS, AIFF, AC3, DTS, EAC3, F32, F64, S16, S24, S32, U8, WMA, Vorbis)
+  - 🎬 **Vídeo**: 20 formatos (MP4, AVI, MKV, MOV, FLV, WebM, 3GP, WMV, ASF, MOD, MTS, TS, VOB, M2TS, OGV, M4V, F4V, INSV, QT)
+  - 🖼️ **Imagem**: 20 formatos (JPG, PNG, BMP, GIF, TIFF, ICO, WebP, TGA, PNM, PPM, XBM, XPM, SVG, CUR, HEIC, HEIF, JFIF, JP2, JP2K)
+  - 📄 **Documentos**: 6 formatos (PDF, DOCX, DOC, TXT, ODT, RTF)
+  - 📊 **Planilhas**: 5 formatos (CSV, XLSX, XLS, ODS, TSV)
+- 🏗️ **Arquitetura Genérica**: Classes reutilizáveis com mapeamento de codecs FFmpeg
+- 📱 **Dropdown Expandido**: 80+ opções com descrições amigáveis
+- 🧪 **Pronto para Testes**: Versão em produção aguardando feedback dos usuários
+
+## 🚀 Início Rápido
+
+### Para Usuários (Testes dos 100+ Formatos)
+
+1. **Acesse o conversor:**
+   ```
+   http://localhost:5000  ou  http://seu_ip:5000
+   ```
+
+2. **Selecione um arquivo** e **escolha entre 100+ formatos**
+   
+3. **Clique em "Converter"** e **baixe o resultado**
+
+📖 **Documentação completa:** [GUIA_USUARIO_v2.1.0.md](./GUIA_USUARIO_v2.1.0.md)
+
+### Para Desenvolvedores
+
+```bash
+# Clone o repositório
+git clone https://github.com/SuporteAMAD/Conversor_AM.git
+cd Conversor_AM
+
+# Instale dependências
+pip install -r requirements.txt
+
+# Execute a aplicação
+python main.py
+
+# Ou use Docker
+docker-compose up -d
+```
+
+🔗 **Links úteis:**
+- 📄 [Release Notes v2.1.0](./RELEASE_2.1.0.md) - Changelog completo
+- 📚 [Guia do Usuário](./GUIA_USUARIO_v2.1.0.md) - Tutorial com exemplos
+- 🐳 [Docker Hub](https://hub.docker.com/r/gabrielwaschburger/conversor-am) - Imagens prontas
+- 📦 [GitHub Releases](https://github.com/SuporteAMAD/Conversor_AM/releases) - Todas as versões
 
 ## Visão Geral
 
-Esta ferramenta fornece uma interface web completa para conversão de arquivos multimídia e documentos, similar ao Convertio. Suporta conversões entre os formatos mais usados na web, com arquitetura modular e escalável. A funcionalidade de PDF foi completamente separada e mantida na ferramenta I'AM.pdf existente.
+Esta ferramenta fornece uma interface web completa para conversão de arquivos multimídia e documentos, com suporte a **100+ formatos**. Funciona de forma similar ao Convertio, com arquitetura modular e escalável. A funcionalidade de PDF foi completamente separada e mantida na ferramenta I'AM.pdf existente. Suporta conversões entre os formatos mais usados na web, com arquitetura modular e escalável. A funcionalidade de PDF foi completamente separada e mantida na ferramenta I'AM.pdf existente.
 
 ## 🎯 Interface do Usuário
 
@@ -92,31 +132,45 @@ conversor-arquivos-am/
 - **TextConverter**: TXT→PDF
 - **SpreadsheetConverter**: XLSX↔CSV
 
-## Conversões Suportadas (Expandido)
+## Conversões Suportadas (100+ Formatos)
 
-### 🎵 Áudio
-- **OGG → MP3**: Conversão com qualidade 192kbps
-- **MP3 → WAV**: Conversão para formato não comprimido
+### 🎵 Áudio (20 formatos)
+MP3, WAV, FLAC, AAC, M4A, OGG, OPUS, AIFF, WebA, AC3, DTS, EAC3, F32, F64, S16, S24, S32, U8, WMA, Vorbis
 
-### 🎬 Vídeo
-- **MP4 → WAV**: Extração de áudio para formato WAV
-- **MP4 → AVI**: Conversão entre formatos de vídeo
+**Exemplos:**
+- OGG → MP3, MP3 ↔ WAV, WAV → FLAC, MP3 → AAC
+- Todas as combinações com codec FFmpeg otimizado
 
-### 🖼️ Imagem
-- **PNG → JPG**: Otimização e conversão de formato
-- **PNG/JPG → WebP**: Conversão para formato moderno e comprimido
+### 🎬 Vídeo (20 formatos)
+MP4, AVI, MKV, MOV, FLV, WebM, 3GP, WMV, ASF, MOD, MTS, TS, VOB, M2TS, OGV, M4V, F4V, INSV, QT
 
-### 📄 Documentos
-- **DOCX → PDF**: Documentos Word para PDF
-- **PDF → DOCX**: PDFs para documentos editáveis
-- **DOCX → TXT**: Extração de texto puro
+**Exemplos:**
+- MP4 ↔ AVI, MP4 → MKV, AVI → WebM, MOV → MP4
+- Todas as combinações com codec H.264/VP9
 
-### 📊 Planilhas
-- **XLSX → CSV**: Planilhas Excel para CSV
-- **CSV → XLSX**: Arquivos CSV para Excel
+### 🖼️ Imagem (20 formatos)
+JPG, PNG, BMP, GIF, TIFF, ICO, WebP, TGA, PNM, PPM, XBM, XPM, SVG, CUR, HEIC, HEIF, JFIF, JP2, JP2K
 
-### 📝 Texto
-- **TXT → PDF**: Arquivos de texto para PDF
+**Exemplos:**
+- PNG ↔ JPG, PNG → WebP, JPG → BMP, TIFF → PNG
+- Todas as combinações com Pillow/PIL
+
+### 📄 Documentos (6 formatos)
+PDF, DOCX, DOC, TXT, ODT, RTF
+
+**Exemplos:**
+- DOCX ↔ PDF, DOCX → TXT, DOC → PDF, RTF → DOCX
+
+### 📊 Planilhas (5 formatos)
+CSV, XLSX, XLS, ODS, TSV
+
+**Exemplos:**
+- XLSX ↔ CSV, CSV → XLSX, XLS → ODS, TSV → CSV
+
+### 📝 Texto (Suplementar)
+- TXT → PDF, TXT → DOCX
+
+**Para documentação detalhada sobre todos os formatos**, veja [GUIA_USUARIO_v2.1.0.md](./GUIA_USUARIO_v2.1.0.md)
 
 ## Instalação e Configuração
 
