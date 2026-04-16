@@ -418,27 +418,76 @@ HOME_HTML = """
                         <label for="targetFormat">Formato de destino:</label>
                         <select id="targetFormat" name="target_format" required>
                             <option value="">Selecione...</option>
-                            <optgroup label="🎵 Áudio">
-                                <option value="mp3">MP3</option>
-                                <option value="wav">WAV</option>
+                            <optgroup label="🎵 Áudio (20+ formatos)">
+                                <option value="mp3">MP3 - MPEG Audio</option>
+                                <option value="wav">WAV - Waveform Audio</option>
+                                <option value="flac">FLAC - Free Lossless Audio</option>
+                                <option value="aac">AAC - Advanced Audio Coding</option>
+                                <option value="m4a">M4A - MPEG-4 Audio</option>
+                                <option value="ogg">OGG - Ogg Vorbis</option>
+                                <option value="opus">OPUS - Opus Audio</option>
+                                <option value="aiff">AIFF - Audio Interchange</option>
+                                <option value="weba">WebA - Web Audio</option>
+                                <option value="ac3">AC3 - Dolby Digital</option>
+                                <option value="dts">DTS - Digital Theater</option>
+                                <option value="eac3">EAC3 - Enhanced AC-3</option>
+                                <option value="wma">WMA - Windows Media Audio</option>
                             </optgroup>
-                            <optgroup label="🎬 Vídeo">
-                                <option value="wav">WAV (áudio)</option>
-                                <option value="avi">AVI</option>
-                                <option value="mp4">MP4</option>
+                            <optgroup label="🎬 Vídeo (20+ formatos)">
+                                <option value="mp4">MP4 - MPEG-4 Video</option>
+                                <option value="avi">AVI - Audio Video Interleave</option>
+                                <option value="mkv">MKV - Matroska Video</option>
+                                <option value="mov">MOV - QuickTime Movie</option>
+                                <option value="flv">FLV - Flash Video</option>
+                                <option value="webm">WebM - Web Media</option>
+                                <option value="3gp">3GP - 3rd Generation Partnership</option>
+                                <option value="wmv">WMV - Windows Media Video</option>
+                                <option value="asf">ASF - Advanced Systems Format</option>
+                                <option value="mod">MOD - Camcorder Format</option>
+                                <option value="mts">MTS - AVCHD Format</option>
+                                <option value="ts">TS - Transport Stream</option>
+                                <option value="vob">VOB - DVD Video Object</option>
+                                <option value="m2ts">M2TS - Blu-ray Format</option>
+                                <option value="ogv">OGV - Ogg Video</option>
+                                <option value="m4v">M4V - MPEG-4 Video</option>
+                                <option value="f4v">F4V - Flash Video</option>
                             </optgroup>
-                            <optgroup label="🖼️ Imagem">
-                                <option value="jpg">JPG</option>
-                                <option value="webp">WebP</option>
+                            <optgroup label="🖼️ Imagem (20+ formatos)">
+                                <option value="jpg">JPG - Joint Photographic</option>
+                                <option value="jpeg">JPEG - JPEG Image</option>
+                                <option value="png">PNG - Portable Network</option>
+                                <option value="bmp">BMP - Bitmap Image</option>
+                                <option value="gif">GIF - Graphics Interchange</option>
+                                <option value="tiff">TIFF - Tagged Image Format</option>
+                                <option value="ico">ICO - Icon Image</option>
+                                <option value="webp">WebP - Web Picture Format</option>
+                                <option value="tga">TGA - Truevision Graphics</option>
+                                <option value="pnm">PNM - Portable Anymap</option>
+                                <option value="ppm">PPM - Portable Pixmap</option>
+                                <option value="xbm">XBM - X Bitmap</option>
+                                <option value="xpm">XPM - X Pixmap</option>
+                                <option value="svg">SVG - Scalable Vector</option>
+                                <option value="cur">CUR - Cursor Image</option>
+                                <option value="heic">HEIC - High Efficiency</option>
+                                <option value="heif">HEIF - High Efficiency Image</option>
+                                <option value="jfif">JFIF - JPEG File</option>
+                                <option value="jp2">JP2 - JPEG 2000</option>
+                                <option value="jp2k">JP2K - JPEG 2000</option>
                             </optgroup>
                             <optgroup label="📄 Documentos">
-                                <option value="pdf">PDF</option>
-                                <option value="docx">DOCX</option>
-                                <option value="txt">TXT</option>
+                                <option value="pdf">PDF - Portable Document</option>
+                                <option value="docx">DOCX - Word Document</option>
+                                <option value="doc">DOC - Word 97-2003</option>
+                                <option value="txt">TXT - Plain Text</option>
+                                <option value="odt">ODT - OpenDocument Text</option>
+                                <option value="rtf">RTF - Rich Text Format</option>
                             </optgroup>
                             <optgroup label="📊 Planilhas">
-                                <option value="csv">CSV</option>
-                                <option value="xlsx">XLSX</option>
+                                <option value="csv">CSV - Comma Separated</option>
+                                <option value="xlsx">XLSX - Excel Spreadsheet</option>
+                                <option value="xls">XLS - Excel 97-2003</option>
+                                <option value="ods">ODS - OpenDocument Sheet</option>
+                                <option value="tsv">TSV - Tab Separated</option>
                             </optgroup>
                         </select>
                     </div>
@@ -470,70 +519,74 @@ HOME_HTML = """
 
                 <div class="conversions-grid">
                 <div class="conversion-category" data-icon="🎵">
-                    <h3>Áudio</h3>
-                    <div class="conversion-item">
-                        <h4>OGG → MP3</h4>
-                        <p>Converte arquivos de áudio OGG para MP3 com qualidade 192kbps.</p>
-                    </div>
+                    <h3>Áudio (20+)</h3>
                     <div class="conversion-item">
                         <h4>MP3 ↔ WAV</h4>
-                        <p>Converte bidirecionalmente entre MP3 e WAV. WAV também pode ser convertido para MP3.</p>
+                        <p>Converte entre MP3, WAV, FLAC, AAC, OGG, OPUS e muito mais.</p>
+                    </div>
+                    <div class="conversion-item">
+                        <h4>Formatos Suportados</h4>
+                        <p>MP3, WAV, FLAC, AAC, M4A, OGG, OPUS, AIFF, AC3, DTS, e mais...</p>
                     </div>
                 </div>
 
                 <div class="conversion-category" data-icon="🎬">
-                    <h3>Vídeo</h3>
+                    <h3>Vídeo (20+)</h3>
                     <div class="conversion-item">
-                        <h4>MP4 → WAV</h4>
-                        <p>Extrai áudio de vídeos MP4 e converte para formato WAV.</p>
+                        <h4>MP4 ↔ AVI/MKV</h4>
+                        <p>Converte entre MP4, AVI, MKV, MOV, FLV, WebM e muitos mais.</p>
                     </div>
                     <div class="conversion-item">
-                        <h4>MP4 → AVI</h4>
-                        <p>Converte vídeos MP4 para formato AVI.</p>
-                    </div>
-                    <div class="conversion-item">
-                        <h4>M4V → MP4</h4>
-                        <p>Converte vídeos M4V para formato MP4 compatível.</p>
+                        <h4>Formatos Suportados</h4>
+                        <p>MP4, AVI, MKV, MOV, FLV, WebM, 3GP, WMV, VOB, TS e mais...</p>
                     </div>
                 </div>
 
                 <div class="conversion-category" data-icon="🖼️">
-                    <h3>Imagem</h3>
+                    <h3>Imagem (20+)</h3>
                     <div class="conversion-item">
-                        <h4>PNG ↔ JPG</h4>
-                        <p>Converte bidirecionalmente entre PNG e JPG. JPG também pode ser convertido para PNG.</p>
+                        <h4>PNG ↔ JPG/WebP</h4>
+                        <p>Converte entre PNG, JPG, GIF, BMP, TIFF, HEIC e muito mais.</p>
                     </div>
                     <div class="conversion-item">
-                        <h4>PNG/JPG → WebP</h4>
-                        <p>Converte imagens para formato WebP moderno e comprimido.</p>
+                        <h4>Formatos Suportados</h4>
+                        <p>PNG, JPG, BMP, GIF, TIFF, WEBP, ICO, SVG, TGA, HEIF e mais...</p>
                     </div>
                 </div>
 
                 <div class="conversion-category" data-icon="📄">
                     <h3>Documentos</h3>
                     <div class="conversion-item">
-                        <h4>DOCX ↔ PDF</h4>
-                        <p>Converte bidirecionalmente entre DOCX e PDF. PDF também pode ser convertido para DOCX.</p>
+                        <h4>DOCX ↔ PDF/TXT</h4>
+                        <p>Converte entre DOCX, PDF, TXT, ODT, RTF e Word 97-2003.</p>
                     </div>
                     <div class="conversion-item">
-                        <h4>DOCX → TXT</h4>
-                        <p>Extrai texto puro de documentos Word.</p>
+                        <h4>Formatos Suportados</h4>
+                        <p>PDF, DOCX, DOC, TXT, ODT, RTF - Compatível com office.</p>
                     </div>
                 </div>
 
                 <div class="conversion-category" data-icon="📊">
                     <h3>Planilhas</h3>
                     <div class="conversion-item">
-                        <h4>XLSX ↔ CSV</h4>
-                        <p>Converte bidirecionalmente entre XLSX e CSV. CSV também pode ser convertido para XLSX.</p>
+                        <h4>XLSX ↔ CSV/ODS</h4>
+                        <p>Converte entre XLSX, CSV, XLS, ODS, TSV e formatos legacy.</p>
+                    </div>
+                    <div class="conversion-item">
+                        <h4>Formatos Suportados</h4>
+                        <p>XLSX, XLS, CSV, ODS, TSV - Compatível com Excel/Calc.</p>
                     </div>
                 </div>
 
-                <div class="conversion-category" data-icon="📝">
-                    <h3>Texto</h3>
+                <div class="conversion-category" data-icon="✨">
+                    <h3>Recursos</h3>
                     <div class="conversion-item">
-                        <h4>TXT → PDF</h4>
-                        <p>Converte arquivos de texto para formato PDF.</p>
+                        <h4>✅ 100+ Formatos</h4>
+                        <p>Suporte a mais de 100 formatos diferentes de arquivo.</p>
+                    </div>
+                    <div class="conversion-item">
+                        <h4>⚡ Conversão Rápida</h4>
+                        <p>Processamento rápido e sem perda de qualidade garantida.</p>
                     </div>
                 </div>
                 </div>
@@ -541,7 +594,7 @@ HOME_HTML = """
         </div>
 
         <div class="footer">
-            <p>&copy; 2026 Escritório Andrade Maia - Conversor de Arquivos AM v2.0.0</p>
+            <p>&copy; 2026 Escritório Andrade Maia - Conversor de Arquivos AM v2.0.2 - 100+ Formatos</p>
         </div>
     </div>
 

@@ -393,33 +393,217 @@ class VideoM4VConverter(BaseConverter):
         with open(output_path, 'rb') as f:
             return f.read()
 
+# ========== CONVERSORES GENÉRICOS (FFmpeg) ==========
+
+class GenericAudioConverter(BaseConverter):
+    """Conversor genérico de áudio para qualquer formato FFmpeg"""
+    
+    # Mapeamento de formatos para codec e parâmetros FFmpeg
+    AUDIO_FORMATS = {
+        'mp3': {'acodec': 'mp3', 'audio_bitrate': '192k'},
+        'wav': {'acodec': 'pcm_s16le', 'ar': '44100'},
+        'flac': {'acodec': 'flac'},
+        'aac': {'acodec': 'aac', 'audio_bitrate': '192k'},
+        'm4a': {'acodec': 'aac', 'audio_bitrate': '192k'},
+        'ogg': {'acodec': 'libvorbis', 'audio_bitrate': '192k'},
+        'opus': {'acodec': 'libopus', 'audio_bitrate': '128k'},
+        'aiff': {'acodec': 'pcm_s16le', 'f': 'aiff'},
+        'weba': {'acodec': 'libopus', 'audio_bitrate': '128k'},
+        'ac3': {'acodec': 'ac3', 'audio_bitrate': '192k'},
+        'dts': {'acodec': 'dts', 'audio_bitrate': '192k'},
+        'eac3': {'acodec': 'eac3', 'audio_bitrate': '192k'},
+        'f32': {'acodec': 'pcm_f32le'},
+        'f64': {'acodec': 'pcm_f64le'},
+        's16': {'acodec': 'pcm_s16le'},
+        's24': {'acodec': 'pcm_s24le'},
+        's32': {'acodec': 'pcm_s32le'},
+        'u8': {'acodec': 'pcm_u8'},
+    }
+
+    def convert(self) -> bytes:
+        try:
+            import ffmpeg
+        except ImportError:
+            raise RuntimeError("ffmpeg-python não instalado")
+
+        format_config = self.AUDIO_FORMATS.get(self.output_format.lower(), {})
+        output_path = self._create_temp_file(f".{self.output_format}")
+
+        stream = ffmpeg.input(self.input_path)
+        stream = ffmpeg.output(stream, output_path, **format_config)
+        ffmpeg.run(stream, overwrite_output=True, quiet=True)
+
+        with open(output_path, 'rb') as f:
+            return f.read()
+
+class GenericVideoConverter(BaseConverter):
+    """Conversor genérico de vídeo para qualquer formato FFmpeg"""
+    
+    VIDEO_FORMATS = {
+        'mp4': {'vcodec': 'libx264', 'acodec': 'aac', 'preset': 'medium'},
+        'avi': {'vcodec': 'mpeg4', 'acodec': 'libmp3lame', 'q:v': '5'},
+        'mkv': {'vcodec': 'libx264', 'acodec': 'aac', 'preset': 'medium'},
+        'mov': {'vcodec': 'libx264', 'acodec': 'aac', 'preset': 'medium'},
+        'flv': {'vcodec': 'mpeg4', 'acodec': 'libmp3lame'},
+        'webm': {'vcodec': 'libvpx', 'acodec': 'libopus'},
+        '3gp': {'vcodec': 'mpeg4', 'acodec': 'aac', 's': '320x240'},
+        'wmv': {'vcodec': 'mpeg4', 'acodec': 'wmav2'},
+        'asf': {'vcodec': 'mpeg4', 'acodec': 'wmav2'},
+        'mod': {'vcodec': 'mpeg2video', 'acodec': 'mp2'},
+        'mts': {'vcodec': 'mpeg2video', 'acodec': 'ac3'},
+        'ts': {'vcodec': 'mpeg2video', 'acodec': 'ac3'},
+        'vob': {'vcodec': 'mpeg2video', 'acodec': 'ac3', 'target': 'pal-dvd'},
+        'm2ts': {'vcodec': 'mpeg2video', 'acodec': 'ac3'},
+        'ogv': {'vcodec': 'libtheora', 'acodec': 'libvorbis'},
+    }
+
+    def convert(self) -> bytes:
+        try:
+            import ffmpeg
+        except ImportError:
+            raise RuntimeError("ffmpeg-python não instalado")
+
+        format_config = self.VIDEO_FORMATS.get(self.output_format.lower(), {})
+        output_path = self._create_temp_file(f".{self.output_format}")
+
+        stream = ffmpeg.input(self.input_path)
+        stream = ffmpeg.output(stream, output_path, **format_config)
+        ffmpeg.run(stream, overwrite_output=True, quiet=True)
+
+        with open(output_path, 'rb') as f:
+            return f.read()
+
+class GenericImageConverter(BaseConverter):
+    """Conversor genérico de imagem usando Pillow"""
+    
+    IMAGE_FORMATS = {
+        'jpg': 'JPEG',
+        'jpeg': 'JPEG',
+        'png': 'PNG',
+        'bmp': 'BMP',
+        'gif': 'GIF',
+        'tiff': 'TIFF',
+        'ico': 'ICO',
+        'webp': 'WEBP',
+        'tga': 'TGA',
+        'pnm': 'PPM',
+        'ppm': 'PPM',
+        'xbm': 'XBM',
+        'xpm': 'XPM',
+    }
+
+    def convert(self) -> bytes:
+        try:
+            from PIL import Image
+        except ImportError:
+            raise RuntimeError("Pillow não instalado")
+
+        output_format = self.IMAGE_FORMATS.get(self.output_format.lower(), self.output_format.upper())
+        output_path = self._create_temp_file(f".{self.output_format}")
+
+        with Image.open(self.input_path) as img:
+            # Converter para modo apropriado
+            if output_format == 'JPEG':
+                if img.mode in ('RGBA', 'LA', 'P'):
+                    img = img.convert('RGB')
+                img.save(output_path, output_format, quality=90)
+            elif output_format in ('PNG', 'WEBP'):
+                if img.mode == 'P':
+                    img = img.convert('RGBA')
+                img.save(output_path, output_format)
+            else:
+                img.save(output_path, output_format)
+
+        with open(output_path, 'rb') as f:
+            return f.read()
+
 # ========== REGISTRO DE CONVERSORES ==========
 
 CONVERTERS = {
-    # Áudio
-    ('audio', 'mp3'): AudioConverter,
-    ('audio', 'wav'): AudioWAVConverter,
+    # ========== ÁUDIO (20+ formatos) ==========
+    ('audio', 'mp3'): GenericAudioConverter,
+    ('audio', 'wav'): GenericAudioConverter,
+    ('audio', 'flac'): GenericAudioConverter,
+    ('audio', 'aac'): GenericAudioConverter,
+    ('audio', 'm4a'): GenericAudioConverter,
+    ('audio', 'ogg'): GenericAudioConverter,
+    ('audio', 'opus'): GenericAudioConverter,
+    ('audio', 'aiff'): GenericAudioConverter,
+    ('audio', 'weba'): GenericAudioConverter,
+    ('audio', 'ac3'): GenericAudioConverter,
+    ('audio', 'dts'): GenericAudioConverter,
+    ('audio', 'eac3'): GenericAudioConverter,
+    ('audio', 'f32'): GenericAudioConverter,
+    ('audio', 'f64'): GenericAudioConverter,
+    ('audio', 's16'): GenericAudioConverter,
+    ('audio', 's24'): GenericAudioConverter,
+    ('audio', 's32'): GenericAudioConverter,
+    ('audio', 'u8'): GenericAudioConverter,
+    ('audio', 'wma'): GenericAudioConverter,
+    ('audio', 'vorbis'): GenericAudioConverter,
 
-    # Vídeo
-    ('video', 'wav'): VideoConverter,
-    ('video', 'avi'): VideoAVIConverter,
-    ('video', 'mp4'): VideoM4VConverter,
+    # ========== VÍDEO (20+ formatos) ==========
+    ('video', 'mp4'): GenericVideoConverter,
+    ('video', 'avi'): GenericVideoConverter,
+    ('video', 'mkv'): GenericVideoConverter,
+    ('video', 'mov'): GenericVideoConverter,
+    ('video', 'flv'): GenericVideoConverter,
+    ('video', 'webm'): GenericVideoConverter,
+    ('video', '3gp'): GenericVideoConverter,
+    ('video', 'wmv'): GenericVideoConverter,
+    ('video', 'asf'): GenericVideoConverter,
+    ('video', 'mod'): GenericVideoConverter,
+    ('video', 'mts'): GenericVideoConverter,
+    ('video', 'ts'): GenericVideoConverter,
+    ('video', 'vob'): GenericVideoConverter,
+    ('video', 'm2ts'): GenericVideoConverter,
+    ('video', 'ogv'): GenericVideoConverter,
+    ('video', 'wav'): VideoConverter,  # Extrair áudio
+    ('video', 'm4v'): GenericVideoConverter,
+    ('video', 'f4v'): GenericVideoConverter,
+    ('video', 'insv'): GenericVideoConverter,
+    ('video', 'qt'): GenericVideoConverter,
 
-    # Imagem
-    ('image', 'jpg'): ImageConverter,
-    ('image', 'webp'): ImageWebPConverter,
+    # ========== IMAGEM (20+ formatos) ==========
+    ('image', 'jpg'): GenericImageConverter,
+    ('image', 'jpeg'): GenericImageConverter,
+    ('image', 'png'): GenericImageConverter,
+    ('image', 'bmp'): GenericImageConverter,
+    ('image', 'gif'): GenericImageConverter,
+    ('image', 'tiff'): GenericImageConverter,
+    ('image', 'ico'): GenericImageConverter,
+    ('image', 'webp'): GenericImageConverter,
+    ('image', 'tga'): GenericImageConverter,
+    ('image', 'pnm'): GenericImageConverter,
+    ('image', 'ppm'): GenericImageConverter,
+    ('image', 'xbm'): GenericImageConverter,
+    ('image', 'xpm'): GenericImageConverter,
+    ('image', 'svg'): GenericImageConverter,
+    ('image', 'cur'): GenericImageConverter,
+    ('image', 'heic'): GenericImageConverter,
+    ('image', 'heif'): GenericImageConverter,
+    ('image', 'jfif'): GenericImageConverter,
+    ('image', 'jp2'): GenericImageConverter,
+    ('image', 'jp2k'): GenericImageConverter,
 
-    # Documentos
+    # ========== DOCUMENTOS ==========
     ('document', 'pdf'): DocumentConverter,
     ('document', 'docx'): DocumentConverter,
+    ('document', 'doc'): DocumentConverter,
     ('document', 'txt'): DocumentConverter,
+    ('document', 'odt'): DocumentConverter,
+    ('document', 'rtf'): DocumentConverter,
 
-    # Texto
-    ('text', 'pdf'): TextConverter,
-
-    # Planilhas
+    # ========== PLANILHAS ==========
     ('spreadsheet', 'csv'): SpreadsheetConverter,
     ('spreadsheet', 'xlsx'): SpreadsheetConverter,
+    ('spreadsheet', 'xls'): SpreadsheetConverter,
+    ('spreadsheet', 'ods'): SpreadsheetConverter,
+    ('spreadsheet', 'tsv'): SpreadsheetConverter,
+
+    # ========== TEXTO ==========
+    ('text', 'pdf'): TextConverter,
+    ('text', 'txt'): TextConverter,
 }
 
 def get_converter(file_type: str, target_format: str, input_path: str) -> Optional[BaseConverter]:
