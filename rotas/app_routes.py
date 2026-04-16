@@ -476,8 +476,8 @@ HOME_HTML = """
                         <p>Converte arquivos de áudio OGG para MP3 com qualidade 192kbps.</p>
                     </div>
                     <div class="conversion-item">
-                        <h4>MP3 → WAV</h4>
-                        <p>Converte arquivos MP3 para formato WAV não comprimido.</p>
+                        <h4>MP3 ↔ WAV</h4>
+                        <p>Converte bidirecionalmente entre MP3 e WAV. WAV também pode ser convertido para MP3.</p>
                     </div>
                 </div>
 
@@ -500,8 +500,8 @@ HOME_HTML = """
                 <div class="conversion-category" data-icon="🖼️">
                     <h3>Imagem</h3>
                     <div class="conversion-item">
-                        <h4>PNG → JPG</h4>
-                        <p>Converte imagens PNG para JPG com otimização de qualidade.</p>
+                        <h4>PNG ↔ JPG</h4>
+                        <p>Converte bidirecionalmente entre PNG e JPG. JPG também pode ser convertido para PNG.</p>
                     </div>
                     <div class="conversion-item">
                         <h4>PNG/JPG → WebP</h4>
@@ -512,12 +512,8 @@ HOME_HTML = """
                 <div class="conversion-category" data-icon="📄">
                     <h3>Documentos</h3>
                     <div class="conversion-item">
-                        <h4>DOCX → PDF</h4>
-                        <p>Converte documentos Word para formato PDF.</p>
-                    </div>
-                    <div class="conversion-item">
-                        <h4>PDF → DOCX</h4>
-                        <p>Converte arquivos PDF para documentos Word editáveis.</p>
+                        <h4>DOCX ↔ PDF</h4>
+                        <p>Converte bidirecionalmente entre DOCX e PDF. PDF também pode ser convertido para DOCX.</p>
                     </div>
                     <div class="conversion-item">
                         <h4>DOCX → TXT</h4>
@@ -528,12 +524,8 @@ HOME_HTML = """
                 <div class="conversion-category" data-icon="📊">
                     <h3>Planilhas</h3>
                     <div class="conversion-item">
-                        <h4>XLSX → CSV</h4>
-                        <p>Converte planilhas Excel para formato CSV.</p>
-                    </div>
-                    <div class="conversion-item">
-                        <h4>CSV → XLSX</h4>
-                        <p>Converte arquivos CSV para planilhas Excel.</p>
+                        <h4>XLSX ↔ CSV</h4>
+                        <p>Converte bidirecionalmente entre XLSX e CSV. CSV também pode ser convertido para XLSX.</p>
                     </div>
                 </div>
 
