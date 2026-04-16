@@ -42,7 +42,7 @@ HOME_HTML = """
         }
         .header {
             background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
-            padding: 30px;
+            padding: 20px;
             text-align: center;
             position: relative;
         }
@@ -57,42 +57,44 @@ HOME_HTML = """
             opacity: 0.1;
         }
         .header h1 {
-            font-size: 2.5em;
+            font-size: 2em;
             font-weight: 700;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
             position: relative;
             z-index: 1;
         }
         .header p {
-            font-size: 1.1em;
+            font-size: 0.95em;
             opacity: 0.9;
             position: relative;
             z-index: 1;
+            margin: 3px 0;
         }
         .main-content {
-            padding: 40px;
+            padding: 25px;
         }
         .upload-section {
             background: #2a2a2a;
             border-radius: 12px;
-            padding: 30px;
-            margin-bottom: 30px;
+            padding: 20px;
+            margin-bottom: 25px;
             border: 1px solid #ff6b35;
         }
         .upload-section h2 {
             color: #ff6b35;
-            margin-bottom: 20px;
-            font-size: 1.5em;
+            margin-bottom: 15px;
+            font-size: 1.2em;
         }
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 12px;
         }
         .form-group label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             font-weight: 600;
             color: #ffffff;
+            font-size: 0.9em;
         }
         .file-input-container {
             position: relative;
@@ -106,33 +108,31 @@ HOME_HTML = """
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 15px 20px;
+            padding: 12px 15px;
             background: #3a3a3a;
             border: 2px dashed #ff6b35;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
             color: #cccccc;
+            font-size: 0.9em;
         }
         .file-input-label:hover {
             background: #4a4a4a;
             border-color: #ff8c42;
         }
-        .file-input-label i {
-            margin-right: 10px;
-            font-size: 1.2em;
-        }
         .file-name {
-            margin-top: 10px;
+            margin-top: 8px;
             color: #ff6b35;
             font-weight: 500;
+            font-size: 0.85em;
         }
         select, button {
             width: 100%;
-            padding: 15px;
+            padding: 12px;
             border: none;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 14px;
             transition: all 0.3s ease;
         }
         select {
@@ -149,7 +149,7 @@ HOME_HTML = """
             color: white;
             font-weight: 600;
             cursor: pointer;
-            margin-top: 20px;
+            margin-top: 15px;
             box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
         }
         button:hover {
@@ -231,54 +231,64 @@ HOME_HTML = """
             margin-right: 10px;
         }
         .conversions {
-            margin-top: 40px;
+            margin-top: 30px;
         }
         .conversions h2 {
             color: #ff6b35;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             text-align: center;
-            font-size: 1.8em;
+            font-size: 1.4em;
+        }
+        .conversions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
         }
         .conversion-category {
-            margin-bottom: 30px;
             background: #2a2a2a;
             border-radius: 12px;
-            padding: 25px;
-            border: 1px solid #444;
+            padding: 18px;
+            border: 1px solid #ff6b35;
+            transition: all 0.3s ease;
+        }
+        .conversion-category:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.2);
         }
         .conversion-category h3 {
             color: #ff6b35;
-            margin-bottom: 20px;
-            font-size: 1.4em;
+            margin-bottom: 12px;
+            font-size: 1.1em;
             display: flex;
             align-items: center;
         }
         .conversion-category h3::before {
             content: attr(data-icon);
-            margin-right: 10px;
-            font-size: 1.2em;
+            margin-right: 8px;
+            font-size: 1.3em;
         }
         .conversion-item {
             background: #3a3a3a;
-            padding: 15px;
-            margin: 8px 0;
-            border-radius: 8px;
-            border-left: 4px solid #ff6b35;
-            transition: all 0.3s ease;
+            padding: 10px;
+            margin: 6px 0;
+            border-radius: 6px;
+            border-left: 3px solid #ff6b35;
+            transition: all 0.2s ease;
+            font-size: 0.85em;
         }
         .conversion-item:hover {
             background: #4a4a4a;
-            transform: translateX(5px);
+            transform: translateX(3px);
         }
         .conversion-item h4 {
-            margin: 0 0 8px 0;
+            margin: 0 0 4px 0;
             color: #ffffff;
-            font-size: 1em;
+            font-size: 0.95em;
         }
         .conversion-item p {
-            margin: 5px 0;
+            margin: 0;
             color: #cccccc;
-            font-size: 0.9em;
+            font-size: 0.8em;
         }
         .footer {
             text-align: center;
@@ -288,18 +298,96 @@ HOME_HTML = """
             color: #888;
             font-size: 0.9em;
         }
+        @media (max-width: 1024px) {
+            .conversions-grid {
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            }
+        }
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
+                border-radius: 8px;
             }
             .header {
-                padding: 20px;
+                padding: 15px;
             }
             .header h1 {
-                font-size: 2em;
+                font-size: 1.5em;
+            }
+            .header p {
+                font-size: 0.85em;
             }
             .main-content {
-                padding: 20px;
+                padding: 15px;
+            }
+            .upload-section {
+                padding: 15px;
+            }
+            .upload-section h2 {
+                font-size: 1.1em;
+            }
+            .conversions h2 {
+                font-size: 1.2em;
+            }
+            .conversions-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .conversion-category {
+                padding: 15px;
+            }
+            .conversion-category h3 {
+                font-size: 1em;
+            }
+            select, button {
+                padding: 10px;
+                font-size: 13px;
+            }
+        }
+        @media (max-width: 480px) {
+            .container {
+                margin: 5px;
+            }
+            .header {
+                padding: 12px;
+            }
+            .header h1 {
+                font-size: 1.3em;
+            }
+            .header p {
+                font-size: 0.75em;
+                margin: 2px 0;
+            }
+            .main-content {
+                padding: 10px;
+            }
+            .upload-section {
+                padding: 12px;
+                margin-bottom: 15px;
+            }
+            .upload-section h2 {
+                font-size: 1em;
+                margin-bottom: 10px;
+            }
+            .conversions-grid {
+                gap: 10px;
+            }
+            .conversion-category {
+                padding: 12px;
+            }
+            .conversion-item {
+                padding: 8px;
+                margin: 4px 0;
+            }
+            .conversion-item h4 {
+                font-size: 0.9em;
+            }
+            .conversion-item p {
+                font-size: 0.75em;
+            }
+            button {
+                padding: 10px;
+                font-size: 12px;
             }
         }
     </style>
@@ -380,6 +468,7 @@ HOME_HTML = """
             <div class="conversions">
                 <h2>🔧 Conversões Disponíveis</h2>
 
+                <div class="conversions-grid">
                 <div class="conversion-category" data-icon="🎵">
                     <h3>Áudio</h3>
                     <div class="conversion-item">
@@ -454,6 +543,7 @@ HOME_HTML = """
                         <h4>TXT → PDF</h4>
                         <p>Converte arquivos de texto para formato PDF.</p>
                     </div>
+                </div>
                 </div>
             </div>
         </div>
