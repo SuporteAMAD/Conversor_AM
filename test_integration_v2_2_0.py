@@ -10,6 +10,9 @@ import tempfile
 import requests
 from pathlib import Path
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 # Adicionar diretório ao path
 sys.path.insert(0, os.path.dirname(__file__))
 

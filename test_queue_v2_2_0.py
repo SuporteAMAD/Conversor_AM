@@ -10,12 +10,26 @@ import tempfile
 import shutil
 from pathlib import Path
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 # Adicionar diretório ao path
 sys.path.insert(0, os.path.dirname(__file__))
 
 from queue_manager import QueueManager, ConversionStatus
 from worker import ConversionWorker
 from websocket_manager import get_ws_manager
+
+
+class MockWebSocketConnection:
+    """Mock simples de conexão WebSocket para testes."""
+
+    def __init__(self, connection_id: str):
+        self.connection_id = connection_id
+        self.messages = []
+
+    def send(self, payload: str):
+        self.messages.append(payload)
 
 
 def test_queue_manager():
@@ -186,7 +200,7 @@ def test_websocket_manager():
     
     # Test 1: Registrar conexão (mock)
     print("Test 1: Registrar conexão...")
-    mock_conn = {"id": "conn1"}
+    mock_conn = MockWebSocketConnection("conn1")
     task_id = "task123"
     ws_manager.register_connection(task_id, mock_conn)
     assert ws_manager.get_connected_count(task_id) == 1, "Conexão não registrada"

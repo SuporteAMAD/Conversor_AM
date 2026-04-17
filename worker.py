@@ -67,6 +67,7 @@ class ConversionWorker:
     
     def _worker_loop(self):
         """Loop principal do worker - verifica fila e processa tarefas."""
+        logger.debug("Worker loop iniciado")
         while self.is_running:
             try:
                 # Limpar threads completadas
@@ -75,7 +76,9 @@ class ConversionWorker:
                 # Se temos slots disponíveis e há tarefas na fila
                 if len(self.active_threads) < self.max_concurrent:
                     task = self.queue_manager.get_next_task()
+                    logger.debug("Verificando fila | tarefa_encontrada=%s", task is not None)
                     if task:
+                        logger.debug("Processando tarefa da fila | task_id=%s", task['id'])
                         # Iniciar nova thread para processar tarefa
                         thread = threading.Thread(
                             target=self._process_task,
@@ -140,7 +143,8 @@ _worker = None
 
 def init_worker(conversion_func: Callable, 
                 queue_manager: Optional[QueueManager] = None,
-                max_concurrent: int = 1) -> ConversionWorker:
+                max_concurrent: int = 1,
+                check_interval: float = 2.0) -> ConversionWorker:
     """
     Inicializa worker global.
     
@@ -160,7 +164,8 @@ def init_worker(conversion_func: Callable,
     _worker = ConversionWorker(
         conversion_func=conversion_func,
         queue_manager=queue_manager,
-        max_concurrent=max_concurrent
+        max_concurrent=max_concurrent,
+        check_interval=check_interval
     )
     return _worker
 

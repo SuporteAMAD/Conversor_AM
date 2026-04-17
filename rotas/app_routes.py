@@ -1,14 +1,22 @@
-"""
+﻿"""
 Rotas Flask para o Conversor de Arquivos AM.
 Estrutura modular similar ao I'AM.pdf.
 """
 
 import os
-import io
 from flask import request, send_file, render_template_string, redirect, url_for, flash
 from werkzeug.exceptions import RequestEntityTooLarge
 
-from main import app, get_converter, save_upload_to_temp, save_converted_copy, validate_file_type, sanitize_filename, PER_FILE_LIMIT_MB
+from main import (
+    app,
+    get_converter,
+    save_converted_file_copy,
+    save_upload_to_destination,
+    save_upload_to_temp,
+    validate_file_type,
+    sanitize_filename,
+    PER_FILE_LIMIT_MB,
+)
 from config import get_config
 
 config = get_config()
@@ -415,20 +423,20 @@ HOME_HTML = """
     <div class="container">
         <div class="header">
             <h1>Conversor de Arquivos AM</h1>
-            <p>Ferramenta profissional de conversão de arquivos</p>
-            <p style="margin-top: 15px; font-size: 1.2em; font-weight: 600; letter-spacing: 1px;">✅ Tudo local, tudo seguro.</p>
+            <p>Ferramenta profissional de conversÃ£o de arquivos</p>
+            <p style="margin-top: 15px; font-size: 1.2em; font-weight: 600; letter-spacing: 1px;">âœ… Tudo local, tudo seguro.</p>
         </div>
 
         <div class="main-content">
             <div class="upload-section">
-                <h2>📤 Fazer Upload e Converter</h2>
+                <h2>ðŸ“¤ Fazer Upload e Converter</h2>
                 <form id="uploadForm" enctype="multipart/form-data">
                     <div class="form-group">
                         <label for="file">Selecione o arquivo:</label>
                         <div class="file-input-container">
                             <input type="file" id="file" name="file" class="file-input" required>
                             <label for="file" class="file-input-label">
-                                <i>📎</i> Clique para selecionar arquivo
+                                <i>ðŸ“Ž</i> Clique para selecionar arquivo
                             </label>
                         </div>
                         <div id="fileName" class="file-name"></div>
@@ -437,7 +445,7 @@ HOME_HTML = """
                         <label for="targetFormat">Formato de destino:</label>
                         <select id="targetFormat" name="target_format" required>
                             <option value="">Selecione...</option>
-                            <optgroup label="🎵 Áudio (20+ formatos)">
+                            <optgroup label="ðŸŽµ Ãudio (20+ formatos)">
                                 <option value="mp3">MP3 - MPEG Audio</option>
                                 <option value="wav">WAV - Waveform Audio</option>
                                 <option value="flac">FLAC - Free Lossless Audio</option>
@@ -452,7 +460,7 @@ HOME_HTML = """
                                 <option value="eac3">EAC3 - Enhanced AC-3</option>
                                 <option value="wma">WMA - Windows Media Audio</option>
                             </optgroup>
-                            <optgroup label="🎬 Vídeo (20+ formatos)">
+                            <optgroup label="ðŸŽ¬ VÃ­deo (20+ formatos)">
                                 <option value="mp4">MP4 - MPEG-4 Video</option>
                                 <option value="avi">AVI - Audio Video Interleave</option>
                                 <option value="mkv">MKV - Matroska Video</option>
@@ -471,7 +479,7 @@ HOME_HTML = """
                                 <option value="m4v">M4V - MPEG-4 Video</option>
                                 <option value="f4v">F4V - Flash Video</option>
                             </optgroup>
-                            <optgroup label="🖼️ Imagem (20+ formatos)">
+                            <optgroup label="ðŸ–¼ï¸ Imagem (20+ formatos)">
                                 <option value="jpg">JPG - Joint Photographic</option>
                                 <option value="jpeg">JPEG - JPEG Image</option>
                                 <option value="png">PNG - Portable Network</option>
@@ -493,7 +501,7 @@ HOME_HTML = """
                                 <option value="jp2">JP2 - JPEG 2000</option>
                                 <option value="jp2k">JP2K - JPEG 2000</option>
                             </optgroup>
-                            <optgroup label="📄 Documentos">
+                            <optgroup label="ðŸ“„ Documentos">
                                 <option value="pdf">PDF - Portable Document</option>
                                 <option value="docx">DOCX - Word Document</option>
                                 <option value="doc">DOC - Word 97-2003</option>
@@ -501,7 +509,7 @@ HOME_HTML = """
                                 <option value="odt">ODT - OpenDocument Text</option>
                                 <option value="rtf">RTF - Rich Text Format</option>
                             </optgroup>
-                            <optgroup label="📊 Planilhas">
+                            <optgroup label="ðŸ“Š Planilhas">
                                 <option value="csv">CSV - Comma Separated</option>
                                 <option value="xlsx">XLSX - Excel Spreadsheet</option>
                                 <option value="xls">XLS - Excel 97-2003</option>
@@ -514,43 +522,43 @@ HOME_HTML = """
                         <label class="checkbox-label">
                             <input type="checkbox" id="useQueue" name="use_queue" value="true">
                             <span class="checkmark"></span>
-                            Usar fila de conversão (recomendado para arquivos grandes)
+                            Usar fila de conversÃ£o (recomendado para arquivos grandes)
                         </label>
                         <div class="queue-info" style="font-size: 0.85em; color: #888; margin-top: 5px;">
-                            📋 Processamento em fila evita timeouts e permite múltiplas conversões simultâneas
+                            ðŸ“‹ Processamento em fila evita timeouts e permite mÃºltiplas conversÃµes simultÃ¢neas
                         </div>
                     </div>
                     <button type="submit" id="convertBtn">
-                        🚀 Converter Arquivo
+                        ðŸš€ Converter Arquivo
                     </button>
                 </form>
             </div>
 
             <div class="progress-section" id="progressSection">
-                <h3>🔄 Convertendo Arquivo...</h3>
+                <h3>ðŸ”„ Convertendo Arquivo...</h3>
                 <div class="progress-container">
                     <div class="progress-bar" id="progressBar"></div>
                 </div>
                 <div class="progress-text" id="progressText">0%</div>
-                <div class="status-text" id="statusText">Iniciando conversão...</div>
+                <div class="status-text" id="statusText">Iniciando conversÃ£o...</div>
             </div>
 
             <div class="download-section" id="downloadSection">
-                <h3 id="resultTitle">✅ Conversão Concluída!</h3>
+                <h3 id="resultTitle">âœ… ConversÃ£o ConcluÃ­da!</h3>
                 <p id="resultMessage">Seu arquivo foi convertido com sucesso.</p>
                 <a href="#" id="downloadBtn" class="download-btn">
-                    <i>📥</i> Baixar Arquivo Convertido
+                    <i>ðŸ“¥</i> Baixar Arquivo Convertido
                 </a>
             </div>
 
             <div class="conversions">
-                <h2>🔧 Conversões Disponíveis</h2>
+                <h2>ðŸ”§ ConversÃµes DisponÃ­veis</h2>
 
                 <div class="conversions-grid">
-                <div class="conversion-category" data-icon="🎵">
-                    <h3>Áudio (20+)</h3>
+                <div class="conversion-category" data-icon="ðŸŽµ">
+                    <h3>Ãudio (20+)</h3>
                     <div class="conversion-item">
-                        <h4>MP3 ↔ WAV</h4>
+                        <h4>MP3 â†” WAV</h4>
                         <p>Converte entre MP3, WAV, FLAC, AAC, OGG, OPUS e muito mais.</p>
                     </div>
                     <div class="conversion-item">
@@ -559,10 +567,10 @@ HOME_HTML = """
                     </div>
                 </div>
 
-                <div class="conversion-category" data-icon="🎬">
-                    <h3>Vídeo (20+)</h3>
+                <div class="conversion-category" data-icon="ðŸŽ¬">
+                    <h3>VÃ­deo (20+)</h3>
                     <div class="conversion-item">
-                        <h4>MP4 ↔ AVI/MKV</h4>
+                        <h4>MP4 â†” AVI/MKV</h4>
                         <p>Converte entre MP4, AVI, MKV, MOV, FLV, WebM e muitos mais.</p>
                     </div>
                     <div class="conversion-item">
@@ -571,10 +579,10 @@ HOME_HTML = """
                     </div>
                 </div>
 
-                <div class="conversion-category" data-icon="🖼️">
+                <div class="conversion-category" data-icon="ðŸ–¼ï¸">
                     <h3>Imagem (20+)</h3>
                     <div class="conversion-item">
-                        <h4>PNG ↔ JPG/WebP</h4>
+                        <h4>PNG â†” JPG/WebP</h4>
                         <p>Converte entre PNG, JPG, GIF, BMP, TIFF, HEIC e muito mais.</p>
                     </div>
                     <div class="conversion-item">
@@ -583,39 +591,39 @@ HOME_HTML = """
                     </div>
                 </div>
 
-                <div class="conversion-category" data-icon="📄">
+                <div class="conversion-category" data-icon="ðŸ“„">
                     <h3>Documentos</h3>
                     <div class="conversion-item">
-                        <h4>DOCX ↔ PDF/TXT</h4>
+                        <h4>DOCX â†” PDF/TXT</h4>
                         <p>Converte entre DOCX, PDF, TXT, ODT, RTF e Word 97-2003.</p>
                     </div>
                     <div class="conversion-item">
                         <h4>Formatos Suportados</h4>
-                        <p>PDF, DOCX, DOC, TXT, ODT, RTF - Compatível com office.</p>
+                        <p>PDF, DOCX, DOC, TXT, ODT, RTF - CompatÃ­vel com office.</p>
                     </div>
                 </div>
 
-                <div class="conversion-category" data-icon="📊">
+                <div class="conversion-category" data-icon="ðŸ“Š">
                     <h3>Planilhas</h3>
                     <div class="conversion-item">
-                        <h4>XLSX ↔ CSV/ODS</h4>
+                        <h4>XLSX â†” CSV/ODS</h4>
                         <p>Converte entre XLSX, CSV, XLS, ODS, TSV e formatos legacy.</p>
                     </div>
                     <div class="conversion-item">
                         <h4>Formatos Suportados</h4>
-                        <p>XLSX, XLS, CSV, ODS, TSV - Compatível com Excel/Calc.</p>
+                        <p>XLSX, XLS, CSV, ODS, TSV - CompatÃ­vel com Excel/Calc.</p>
                     </div>
                 </div>
 
-                <div class="conversion-category" data-icon="✨">
+                <div class="conversion-category" data-icon="âœ¨">
                     <h3>Recursos</h3>
                     <div class="conversion-item">
-                        <h4>✅ 100+ Formatos</h4>
+                        <h4>âœ… 100+ Formatos</h4>
                         <p>Suporte a mais de 100 formatos diferentes de arquivo.</p>
                     </div>
                     <div class="conversion-item">
-                        <h4>⚡ Conversão Rápida</h4>
-                        <p>Processamento rápido e sem perda de qualidade garantida.</p>
+                        <h4>âš¡ ConversÃ£o RÃ¡pida</h4>
+                        <p>Processamento rÃ¡pido e sem perda de qualidade garantida.</p>
                     </div>
                 </div>
                 </div>
@@ -623,7 +631,7 @@ HOME_HTML = """
         </div>
 
         <div class="footer">
-            <p>&copy; 2026 Escritório Andrade Maia - Conversor de Arquivos AM v2.0.2 - 100+ Formatos</p>
+            <p>&copy; 2026 EscritÃ³rio Andrade Maia - Conversor de Arquivos AM v2.0.2 - 100+ Formatos</p>
         </div>
     </div>
 
@@ -641,28 +649,31 @@ HOME_HTML = """
         const downloadBtn = document.getElementById('downloadBtn');
         const resultTitle = document.getElementById('resultTitle');
         const resultMessage = document.getElementById('resultMessage');
+        let queueStatusPoll = null;
+        let queueDownloadBtn = null;
+        let queueSocket = null;
 
         // Estados de progresso
         const progressSteps = [
             { percent: 10, text: 'Validando arquivo...' },
-            { percent: 25, text: 'Preparando conversão...' },
+            { percent: 25, text: 'Preparando conversÃ£o...' },
             { percent: 50, text: 'Convertendo arquivo...' },
             { percent: 75, text: 'Finalizando...' },
             { percent: 90, text: 'Salvando arquivo...' },
-            { percent: 100, text: 'Conversão concluída!' }
+            { percent: 100, text: 'ConversÃ£o concluÃ­da!' }
         ];
 
         // Mostrar nome do arquivo selecionado
         fileInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
-                fileName.textContent = `📄 ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                fileName.textContent = `ðŸ“„ ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
             } else {
                 fileName.textContent = '';
             }
         });
 
-        // Manipular envio do formulário
+        // Manipular envio do formulÃ¡rio
         uploadForm.addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -672,11 +683,23 @@ HOME_HTML = """
                 return;
             }
 
-            // Mostrar seção de progresso
+            // Mostrar seÃ§Ã£o de progresso
+            if (queueStatusPoll) {
+                clearInterval(queueStatusPoll);
+                queueStatusPoll = null;
+            }
+            if (queueSocket) {
+                queueSocket.close();
+                queueSocket = null;
+            }
+            if (queueDownloadBtn) {
+                queueDownloadBtn.remove();
+                queueDownloadBtn = null;
+            }
             progressSection.style.display = 'block';
             downloadSection.style.display = 'none';
             convertBtn.disabled = true;
-            convertBtn.textContent = '🔄 Convertendo...';
+            convertBtn.textContent = 'ðŸ”„ Convertendo...';
 
             // Simular progresso
             await simulateProgress();
@@ -694,45 +717,41 @@ HOME_HTML = """
                 const result = await response.json();
 
                 if (response.ok && result.success) {
-                    // Verificar se é resposta de fila ou conversão imediata
+                    // Verificar se Ã© resposta de fila ou conversÃ£o imediata
                     if (result.task_id && result.status === 'queued') {
                         // ========== RESPOSTA DA FILA ==========
                         showQueueResponse(result);
-                    } else if (result.data && result.filename) {
+                    } else if (result.download_url && result.filename) {
                         // ========== RESPOSTA IMEDIATA (LEGACY) ==========
-                        // Converter dados hex para blob
-                        const byteArray = new Uint8Array(result.data.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
-                        const blob = new Blob([byteArray]);
-                        const url = window.URL.createObjectURL(blob);
-
-                        // Mostrar seção de download
+                        // Mostrar seÃ§Ã£o de download
                         downloadSection.className = 'download-section success';
-                        resultTitle.textContent = '✅ Conversão Concluída!';
+                        resultTitle.textContent = 'âœ… ConversÃ£o ConcluÃ­da!';
                         resultMessage.textContent = 'Seu arquivo foi convertido com sucesso.';
-                        downloadBtn.href = url;
+                        downloadBtn.href = result.download_url;
+                        downloadBtn.target = '_blank';
                         downloadBtn.download = result.filename;
-                        downloadBtn.textContent = `📥 Baixar ${result.filename}`;
+                        downloadBtn.textContent = `ðŸ“¥ Baixar ${result.filename}`;
                     } else {
-                        showError('Resposta inválida do servidor');
+                        showError('Resposta invÃ¡lida do servidor');
                     }
 
                 } else {
                     // Erro
-                    showError(result.error || 'Erro desconhecido na conversão');
+                    showError(result.error || 'Erro desconhecido na conversÃ£o');
                 }
 
             } catch (error) {
-                showError('Erro de conexão: ' + error.message);
+                showError('Erro de conexÃ£o: ' + error.message);
             }
 
             // Resetar interface
             progressSection.style.display = 'none';
             downloadSection.style.display = 'block';
             convertBtn.disabled = false;
-            convertBtn.textContent = '🚀 Converter Arquivo';
+            convertBtn.textContent = 'ðŸš€ Converter Arquivo';
         });
 
-        // Simular progresso da conversão
+        // Simular progresso da conversÃ£o
         async function simulateProgress() {
             for (let i = 0; i < progressSteps.length; i++) {
                 const step = progressSteps[i];
@@ -746,58 +765,170 @@ HOME_HTML = """
             }
         }
 
+        function renderQueueStatus(taskId, data, fallbackFile) {
+            const statusLabel = data.status || 'queued';
+            const progressValue = Number.isFinite(data.progress) ? data.progress : 0;
+            const etaLabel = data.eta_seconds ? `${data.eta_seconds}s` : 'calculando';
+            const resultFilename = data.result_filename || 'aguardando processamento';
+
+            resultMessage.innerHTML = `
+                <div style="text-align: left; margin-bottom: 15px;">
+                    <strong>Task ID:</strong> ${taskId}<br>
+                    <strong>Arquivo:</strong> ${fallbackFile || data.filename || '-'}<br>
+                    <strong>Status:</strong> ${statusLabel}<br>
+                    <strong>Progresso:</strong> ${progressValue}%<br>
+                    <strong>ETA:</strong> ${etaLabel}<br>
+                    <strong>Resultado:</strong> ${resultFilename}
+                </div>
+            `;
+        }
+
+        async function pollQueueStatus(taskId, filename) {
+            try {
+                const response = await fetch(`/api/queue/status/${taskId}`);
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'NÃ£o foi possÃ­vel consultar a fila.');
+                }
+
+                renderQueueStatus(taskId, data, filename);
+
+                if (data.status === 'completed') {
+                    clearInterval(queueStatusPoll);
+                    queueStatusPoll = null;
+                    if (queueSocket) {
+                        queueSocket.close();
+                        queueSocket = null;
+                    }
+                    downloadSection.className = 'download-section success';
+                    resultTitle.textContent = 'âœ… ConversÃ£o ConcluÃ­da!';
+                    downloadBtn.href = `/download/${taskId}`;
+                    downloadBtn.target = '_blank';
+                    downloadBtn.textContent = `ðŸ“¥ Baixar ${data.result_filename || filename}`;
+
+                    if (queueDownloadBtn) {
+                        queueDownloadBtn.remove();
+                        queueDownloadBtn = null;
+                    }
+                    return;
+                }
+
+                if (data.status === 'error') {
+                    clearInterval(queueStatusPoll);
+                    queueStatusPoll = null;
+                    if (queueSocket) {
+                        queueSocket.close();
+                        queueSocket = null;
+                    }
+                    showError(data.error || 'A conversÃ£o falhou.');
+                }
+            } catch (error) {
+                clearInterval(queueStatusPoll);
+                queueStatusPoll = null;
+                showError('Erro ao acompanhar fila: ' + error.message);
+            }
+        }
+
+        function startQueuePolling(taskId, filename) {
+            if (queueStatusPoll) {
+                clearInterval(queueStatusPoll);
+            }
+            pollQueueStatus(taskId, filename);
+            queueStatusPoll = setInterval(() => pollQueueStatus(taskId, filename), 2000);
+        }
+
+        function connectQueueWebSocket(taskId, filename) {
+            if (!window.WebSocket) {
+                startQueuePolling(taskId, filename);
+                return;
+            }
+
+            const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+            const socketUrl = `${protocol}://${window.location.host}/ws/queue/${taskId}`;
+            let hasReceivedMessage = false;
+
+            queueSocket = new WebSocket(socketUrl);
+
+            queueSocket.onopen = () => {
+                pollQueueStatus(taskId, filename);
+            };
+
+            queueSocket.onmessage = (event) => {
+                hasReceivedMessage = true;
+                try {
+                    const message = JSON.parse(event.data);
+                    if (message.type === 'progress' || message.type === 'completion' || message.type === 'status') {
+                        pollQueueStatus(taskId, filename);
+                    }
+                } catch (error) {
+                    startQueuePolling(taskId, filename);
+                }
+            };
+
+            queueSocket.onerror = () => {
+                if (!hasReceivedMessage) {
+                    startQueuePolling(taskId, filename);
+                }
+            };
+
+            queueSocket.onclose = () => {
+                queueSocket = null;
+                if (!hasReceivedMessage) {
+                    startQueuePolling(taskId, filename);
+                }
+            };
+        }
+
         // Mostrar resposta da fila
         function showQueueResponse(result) {
             downloadSection.className = 'download-section success';
-            resultTitle.textContent = '📋 Arquivo na Fila!';
-            resultMessage.innerHTML = `
-                <div style="text-align: left; margin-bottom: 15px;">
-                    <strong>Task ID:</strong> ${result.task_id}<br>
-                    <strong>Arquivo:</strong> ${result.filename}<br>
-                    <strong>Tamanho:</strong> ${result.file_size_mb} MB<br>
-                    <strong>Posição na fila:</strong> ${result.queue_position}<br>
-                    <strong>Status:</strong> ${result.status}
-                </div>
-                <div style="background: #333; padding: 15px; border-radius: 8px; margin: 15px 0;">
-                    <strong>🔄 O que acontece agora?</strong><br>
-                    • Seu arquivo foi salvo e adicionado à fila de processamento<br>
-                    • Você será notificado quando a conversão terminar<br>
-                    • Use o Task ID para acompanhar o progresso<br>
-                    • Arquivos são processados em ordem de chegada
-                </div>
-            `;
+            resultTitle.textContent = 'ðŸ“‹ Arquivo na Fila!';
+            renderQueueStatus(result.task_id, {
+                status: result.status,
+                progress: 0,
+                eta_seconds: null,
+                filename: result.filename,
+                result_filename: null
+            }, result.filename);
 
-            // Botão para acompanhar progresso
             downloadBtn.href = `/api/queue/status/${result.task_id}`;
             downloadBtn.target = '_blank';
-            downloadBtn.textContent = `📊 Acompanhar Progresso`;
+            downloadBtn.textContent = `ðŸ“Š Ver status bruto`;
             downloadBtn.style.background = '#4CAF50';
 
-            // Adicionar botão de download quando pronto (placeholder)
-            const downloadWhenReadyBtn = document.createElement('a');
-            downloadWhenReadyBtn.href = '#';
-            downloadWhenReadyBtn.className = 'download-btn';
-            downloadWhenReadyBtn.textContent = '⏳ Download (quando pronto)';
-            downloadWhenReadyBtn.style.background = '#666';
-            downloadWhenReadyBtn.style.marginTop = '10px';
-            downloadWhenReadyBtn.onclick = function(e) {
+            queueDownloadBtn = document.createElement('a');
+            queueDownloadBtn.href = '#';
+            queueDownloadBtn.className = 'download-btn';
+            queueDownloadBtn.textContent = 'â³ Aguardando conclusÃ£o';
+            queueDownloadBtn.style.background = '#666';
+            queueDownloadBtn.style.marginTop = '10px';
+            queueDownloadBtn.onclick = function(e) {
                 e.preventDefault();
-                alert('Arquivo ainda não está pronto. Use "Acompanhar Progresso" para verificar o status.');
             };
 
-            // Inserir após o botão existente
-            downloadBtn.parentNode.insertBefore(downloadWhenReadyBtn, downloadBtn.nextSibling);
+            downloadBtn.parentNode.insertBefore(queueDownloadBtn, downloadBtn.nextSibling);
+            connectQueueWebSocket(result.task_id, result.filename);
+            return;
         }
 
         // Mostrar erro
         function showError(message) {
+            if (queueStatusPoll) {
+                clearInterval(queueStatusPoll);
+                queueStatusPoll = null;
+            }
+            if (queueSocket) {
+                queueSocket.close();
+                queueSocket = null;
+            }
             downloadSection.className = 'download-section error';
-            resultTitle.textContent = '❌ Erro na Conversão';
+            resultTitle.textContent = 'âŒ Erro na ConversÃ£o';
             resultMessage.textContent = message;
             downloadSection.style.display = 'block';
         }
 
-        // Animação de entrada
+        // AnimaÃ§Ã£o de entrada
         document.addEventListener('DOMContentLoaded', function() {
             const container = document.querySelector('.container');
             container.style.opacity = '0';
@@ -818,17 +949,17 @@ HOME_HTML = """
 
 @app.route("/")
 def home():
-    """Página inicial com formulário de upload."""
+    """PÃ¡gina inicial com formulÃ¡rio de upload."""
     return render_template_string(HOME_HTML)
 
 @app.route("/convert", methods=["POST"])
 def convert():
-    """Processa a conversão do arquivo."""
+    """Processa a conversÃ£o do arquivo."""
     file = request.files.get("file")
     target_format = request.form.get("target_format")
     use_queue = request.form.get("use_queue", "false").lower() == "true"
 
-    # Verificar se é uma requisição AJAX
+    # Verificar se Ã© uma requisiÃ§Ã£o AJAX
     is_ajax = request.headers.get('Content-Type', '').startswith('multipart/form-data') and request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
     if not file or file.filename == "":
@@ -843,16 +974,16 @@ def convert():
         flash("Selecione o formato de destino.")
         return redirect(url_for("home"))
 
-    # ========== NOVO: SUPORTE À FILA v2.2.0 ==========
+    # ========== NOVO: SUPORTE Ã€ FILA v2.2.0 ==========
     if use_queue:
         return _convert_with_queue(file, target_format, is_ajax)
 
-    # ========== LEGACY: CONVERSÃO IMEDIATA ==========
+    # ========== LEGACY: CONVERSÃƒO IMEDIATA ==========
     return _convert_immediate(file, target_format, is_ajax)
 
 
 def _convert_immediate(file, target_format: str, is_ajax: bool):
-    """Conversão imediata (modo legacy)."""
+    """ConversÃ£o imediata (modo legacy)."""
     try:
         # Validar tipo do arquivo
         file_type, ext = validate_file_type(file.filename)
@@ -865,38 +996,45 @@ def _convert_immediate(file, target_format: str, is_ajax: bool):
             converter = get_converter(file_type, target_format, input_path)
 
             if not converter:
-                error_msg = f"Conversão {file_type} → {target_format} não suportada."
+                error_msg = f"ConversÃ£o {file_type} â†’ {target_format} nÃ£o suportada."
                 if is_ajax:
                     return {"success": False, "error": error_msg}, 400
                 flash(error_msg)
                 return redirect(url_for("home"))
 
-            # Realizar conversão
+            # Realizar conversÃ£o
             with converter:
-                converted_data = converter.convert()
+                converted_path = converter.convert()
+                converter.temp_files = []
 
-            # Salvar cópia para auditoria
-            output_filename = converter._get_output_filename(sanitize_filename(file.filename))
-            save_converted_copy(output_filename, converted_data)
+            # Salvar cÃ³pia para auditoria
+            output_filename = converter.get_output_filename(sanitize_filename(file.filename))
+            export_path = save_converted_file_copy(output_filename, converted_path)
+            if not export_path:
+                raise RuntimeError("Falha ao persistir arquivo convertido")
+            try:
+                os.remove(converted_path)
+            except OSError:
+                pass
 
             if is_ajax:
-                # Retornar dados para download via JavaScript
+                # Retornar URL de download para evitar payload binÃ¡rio em JSON
                 return {
                     "success": True,
-                    "filename": output_filename,
-                    "data": converted_data.hex()  # Converter bytes para string hex para transmissão
+                    "filename": os.path.basename(export_path),
+                    "download_url": url_for("download_exported_file", filename=os.path.basename(export_path))
                 }
             else:
                 # Retornar arquivo diretamente para download
                 return send_file(
-                    io.BytesIO(converted_data),
+                    export_path,
                     mimetype=f"application/octet-stream",
                     as_attachment=True,
-                    download_name=output_filename
+                    download_name=os.path.basename(export_path)
                 )
 
         finally:
-            # Limpar arquivo temporário de entrada
+            # Limpar arquivo temporÃ¡rio de entrada
             try:
                 os.remove(input_path)
             except:
@@ -908,7 +1046,7 @@ def _convert_immediate(file, target_format: str, is_ajax: bool):
         flash(str(e))
         return redirect(url_for("home"))
     except Exception as e:
-        error_msg = f"Erro durante a conversão: {str(e)}"
+        error_msg = f"Erro durante a conversÃ£o: {str(e)}"
         if is_ajax:
             return {"success": False, "error": error_msg}, 500
         flash(error_msg)
@@ -916,24 +1054,23 @@ def _convert_immediate(file, target_format: str, is_ajax: bool):
 
 
 def _convert_with_queue(file, target_format: str, is_ajax: bool):
-    """Conversão via fila (modo novo v2.2.0)."""
+    """ConversÃ£o via fila (modo novo v2.2.0)."""
     try:
         # Importar gerenciadores de fila
         from main import queue_manager
 
         # Salvar arquivo permanentemente na pasta uploads
         filename = sanitize_filename(file.filename)
-        file_path = os.path.join("uploads", filename)
-        os.makedirs("uploads", exist_ok=True)
-        file.save(file_path)
+        file_path = os.path.join(config.UPLOAD_FOLDER, filename)
+        save_upload_to_destination(file, file_path, per_file_limit_bytes=config.PER_FILE_LIMIT)
 
         # Obter tamanho em MB
         file_size_mb = os.path.getsize(file_path) / (1024 * 1024)
 
-        # Obter IP do usuário
+        # Obter IP do usuÃ¡rio
         user_ip = request.remote_addr
 
-        # Adicionar à fila
+        # Adicionar Ã  fila
         task_id = queue_manager.add_task(
             filename=filename,
             target_format=target_format,
@@ -941,7 +1078,7 @@ def _convert_with_queue(file, target_format: str, is_ajax: bool):
             file_size_mb=file_size_mb
         )
 
-        # Obter posição na fila
+        # Obter posiÃ§Ã£o na fila
         stats = queue_manager.get_queue_stats()
         queue_position = stats['queued']
 
@@ -953,7 +1090,7 @@ def _convert_with_queue(file, target_format: str, is_ajax: bool):
             "filename": filename,
             "queue_position": queue_position,
             "file_size_mb": round(file_size_mb, 2),
-            "message": f"Arquivo adicionado à fila. Posição: {queue_position}"
+            "message": f"Arquivo adicionado Ã  fila. PosiÃ§Ã£o: {queue_position}"
         }
 
         if is_ajax:
@@ -963,7 +1100,7 @@ def _convert_with_queue(file, target_format: str, is_ajax: bool):
             return redirect(url_for("home"))
 
     except Exception as e:
-        error_msg = f"Erro ao adicionar à fila: {str(e)}"
+        error_msg = f"Erro ao adicionar Ã  fila: {str(e)}"
         if is_ajax:
             return {"success": False, "error": error_msg}, 500
         flash(error_msg)
@@ -978,19 +1115,27 @@ def download_converted(task_id):
         # Obter status da tarefa
         task = queue_manager.get_status(task_id)
         if not task:
-            flash("Tarefa não encontrada.")
+            flash("Tarefa nÃ£o encontrada.")
             return redirect(url_for("home"))
 
         if task['status'] != 'completed':
-            flash(f"Tarefa ainda não concluída. Status: {task['status']}")
+            flash(f"Tarefa ainda nÃ£o concluÃ­da. Status: {task['status']}")
             return redirect(url_for("home"))
 
         filename = task['filename_result']
         if not filename:
-            flash("Arquivo convertido não encontrado.")
+            flash("Arquivo convertido nÃ£o encontrado.")
             return redirect(url_for("home"))
 
         # Procurar arquivo nos exports
+        full_path = os.path.join(config.EXPORTS_DIR, filename)
+        if os.path.exists(full_path):
+            return send_file(
+                full_path,
+                mimetype="application/octet-stream",
+                as_attachment=True,
+                download_name=filename
+            )
         exports_dir = config.EXPORTS_DIR
         for file_path in os.listdir(exports_dir):
             if filename in file_path:
@@ -1002,9 +1147,28 @@ def download_converted(task_id):
                     download_name=filename
                 )
 
-        flash("Arquivo convertido não encontrado no servidor.")
+        flash("Arquivo convertido nÃ£o encontrado no servidor.")
         return redirect(url_for("home"))
 
     except Exception as e:
         flash(f"Erro ao fazer download: {str(e)}")
         return redirect(url_for("home"))
+
+
+@app.route("/download/export/<filename>", methods=["GET"])
+def download_exported_file(filename):
+    """Download de arquivo convertido no modo imediato."""
+    safe_name = sanitize_filename(filename)
+    full_path = os.path.join(config.EXPORTS_DIR, safe_name)
+
+    if not os.path.exists(full_path):
+        flash("Arquivo convertido nÃ£o encontrado.")
+        return redirect(url_for("home"))
+
+    return send_file(
+        full_path,
+        mimetype="application/octet-stream",
+        as_attachment=True,
+        download_name=safe_name
+    )
+

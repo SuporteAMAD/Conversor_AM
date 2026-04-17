@@ -72,8 +72,8 @@ def register_queue_routes(app, conversion_func, upload_folder="uploads"):
             # Salvar arquivo
             filename = secure_filename(file.filename)
             file_path = os.path.join(upload_folder, filename)
-            os.makedirs(upload_folder, exist_ok=True)
-            file.save(file_path)
+            from main import save_upload_to_destination
+            save_upload_to_destination(file, file_path)
             
             # Obter tamanho em MB
             file_size_mb = os.path.getsize(file_path) / (1024 * 1024)
@@ -292,30 +292,33 @@ def make_conversion_wrapper(converter_class, upload_folder, ws_manager):
             (success, result, error)
         """
         try:
+            print(f"DEBUG: Iniciando conversão da fila - task_id: {task_id}")
             filename = task['filename_original']
             target_format = task['target_format']
             file_path = os.path.join(upload_folder, filename)
+            print(f"DEBUG: Arquivo: {filename}, formato: {target_format}, caminho: {file_path}")
             
             # Enviar progresso 10%
             ws_manager.send_progress(task_id, 10, 30)
             
-            # TODO: Implementar callback de progresso no conversor
-            # Por enquanto, simulamos com atualização de 50% no meio
-            ws_manager.send_progress(task_id, 50, 15)
+            # Para debug: apenas copiar arquivo sem conversão
+            output_filename = f"{filename.rsplit('.', 1)[0]}_converted.{target_format}"
+            output_path = os.path.join(upload_folder, output_filename)
+            print(f"DEBUG: Copiando para: {output_path}")
             
-            # Chamar conversor
-            # converter = converter_class(...)
-            # result = converter.convert()
-            # result_filename = converter._get_output_filename(filename)
+            import shutil
+            shutil.copy2(file_path, output_path)
             
             # Enviar progresso 100%
             ws_manager.send_progress(task_id, 100, 0)
             
+            print("DEBUG: Conversão simulada concluída")
+            
             # Retornar sucesso
-            return True, {"filename": "result.ext"}, None
+            return True, {"filename": output_filename}, None
         
         except Exception as e:
-            logger.error(f"Erro na conversão {task_id}: {e}", exc_info=True)
+            print(f"ERRO na conversão da fila: {e}")
+            import traceback
+            traceback.print_exc()
             return False, None, str(e)
-    
-    return conversion_func

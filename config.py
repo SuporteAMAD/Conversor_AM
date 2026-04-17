@@ -11,9 +11,13 @@ class Config:
     MAX_CONTENT_LENGTH = 500 * 1024 * 1024  # 500MB
     PER_FILE_LIMIT_MB = 50
     PER_FILE_LIMIT = PER_FILE_LIMIT_MB * 1024 * 1024
+    QUEUE_DB_PATH = os.environ.get("QUEUE_DB_PATH", os.path.join("queue", "queue.db"))
+    QUEUE_MAX_CONCURRENT = int(os.environ.get("QUEUE_MAX_CONCURRENT", "2"))
+    QUEUE_CHECK_INTERVAL = float(os.environ.get("QUEUE_CHECK_INTERVAL", "2.0"))
+    QUEUE_KEEP_DAYS = int(os.environ.get("QUEUE_KEEP_DAYS", "7"))
 
     # Diretórios
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     EXPORTS_DIR = os.path.join(BASE_DIR, "exports")
 
 class DevelopmentConfig(Config):
