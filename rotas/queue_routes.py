@@ -5,7 +5,6 @@ Conversor AM v2.2.0
 Para integrar com app_routes.py, adicionar ao final:
 ```
 from rotas.queue_routes import register_queue_routes
-register_queue_routes(app, converter_func)
 ```
 """
 
@@ -37,7 +36,7 @@ def register_queue_routes(app, conversion_func, upload_folder="uploads"):
     ws_manager = get_ws_manager()
     
     @app.route("/api/queue/add", methods=["POST"])
-    def queue_add():
+    def queue_add_v220():
         """
         Adiciona arquivo à fila de conversão.
         

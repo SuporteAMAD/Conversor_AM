@@ -726,7 +726,7 @@ PER_FILE_LIMIT_MB = config.PER_FILE_LIMIT_MB
 # ========== IMPORTAR ROTAS ==========
 # Importar rotas para registrar no app (FORA do if __name__ para funcionar com WSGI)
 try:
-    from rotas.app_routes import *
+    from rotas.app_routes import home, convert, download_converted
 except ImportError as e:
     print(f"⚠️  Aviso ao importar rotas: {e}")
 
