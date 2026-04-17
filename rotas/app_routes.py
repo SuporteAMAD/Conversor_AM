@@ -162,6 +162,25 @@ HOME_HTML = """
             transform: none;
             box-shadow: none;
         }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 0.9em;
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+        .checkbox-label input[type="checkbox"] {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+            accent-color: #ff6b35;
+        }
+        .queue-info {
+            font-size: 0.85em;
+            color: #888;
+            margin-top: 5px;
+        }
         .progress-section {
             display: none;
             background: #2a2a2a;
@@ -491,6 +510,16 @@ HOME_HTML = """
                             </optgroup>
                         </select>
                     </div>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="useQueue" name="use_queue" value="true">
+                            <span class="checkmark"></span>
+                            Usar fila de conversão (recomendado para arquivos grandes)
+                        </label>
+                        <div class="queue-info" style="font-size: 0.85em; color: #888; margin-top: 5px;">
+                            📋 Processamento em fila evita timeouts e permite múltiplas conversões simultâneas
+                        </div>
+                    </div>
                     <button type="submit" id="convertBtn">
                         🚀 Converter Arquivo
                     </button>
@@ -665,18 +694,27 @@ HOME_HTML = """
                 const result = await response.json();
 
                 if (response.ok && result.success) {
-                    // Sucesso - converter dados hex para blob
-                    const byteArray = new Uint8Array(result.data.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
-                    const blob = new Blob([byteArray]);
-                    const url = window.URL.createObjectURL(blob);
+                    // Verificar se é resposta de fila ou conversão imediata
+                    if (result.task_id && result.status === 'queued') {
+                        // ========== RESPOSTA DA FILA ==========
+                        showQueueResponse(result);
+                    } else if (result.data && result.filename) {
+                        // ========== RESPOSTA IMEDIATA (LEGACY) ==========
+                        // Converter dados hex para blob
+                        const byteArray = new Uint8Array(result.data.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+                        const blob = new Blob([byteArray]);
+                        const url = window.URL.createObjectURL(blob);
 
-                    // Mostrar seção de download
-                    downloadSection.className = 'download-section success';
-                    resultTitle.textContent = '✅ Conversão Concluída!';
-                    resultMessage.textContent = 'Seu arquivo foi convertido com sucesso.';
-                    downloadBtn.href = url;
-                    downloadBtn.download = result.filename;
-                    downloadBtn.textContent = `📥 Baixar ${result.filename}`;
+                        // Mostrar seção de download
+                        downloadSection.className = 'download-section success';
+                        resultTitle.textContent = '✅ Conversão Concluída!';
+                        resultMessage.textContent = 'Seu arquivo foi convertido com sucesso.';
+                        downloadBtn.href = url;
+                        downloadBtn.download = result.filename;
+                        downloadBtn.textContent = `📥 Baixar ${result.filename}`;
+                    } else {
+                        showError('Resposta inválida do servidor');
+                    }
 
                 } else {
                     // Erro
@@ -706,6 +744,49 @@ HOME_HTML = """
                 const delay = i === 0 ? 500 : i === progressSteps.length - 1 ? 1000 : 1500;
                 await new Promise(resolve => setTimeout(resolve, delay));
             }
+        }
+
+        // Mostrar resposta da fila
+        function showQueueResponse(result) {
+            downloadSection.className = 'download-section success';
+            resultTitle.textContent = '📋 Arquivo na Fila!';
+            resultMessage.innerHTML = `
+                <div style="text-align: left; margin-bottom: 15px;">
+                    <strong>Task ID:</strong> ${result.task_id}<br>
+                    <strong>Arquivo:</strong> ${result.filename}<br>
+                    <strong>Tamanho:</strong> ${result.file_size_mb} MB<br>
+                    <strong>Posição na fila:</strong> ${result.queue_position}<br>
+                    <strong>Status:</strong> ${result.status}
+                </div>
+                <div style="background: #333; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <strong>🔄 O que acontece agora?</strong><br>
+                    • Seu arquivo foi salvo e adicionado à fila de processamento<br>
+                    • Você será notificado quando a conversão terminar<br>
+                    • Use o Task ID para acompanhar o progresso<br>
+                    • Arquivos são processados em ordem de chegada
+                </div>
+            `;
+
+            // Botão para acompanhar progresso
+            downloadBtn.href = `/api/queue/status/${result.task_id}`;
+            downloadBtn.target = '_blank';
+            downloadBtn.textContent = `📊 Acompanhar Progresso`;
+            downloadBtn.style.background = '#4CAF50';
+
+            // Adicionar botão de download quando pronto (placeholder)
+            const downloadWhenReadyBtn = document.createElement('a');
+            downloadWhenReadyBtn.href = '#';
+            downloadWhenReadyBtn.className = 'download-btn';
+            downloadWhenReadyBtn.textContent = '⏳ Download (quando pronto)';
+            downloadWhenReadyBtn.style.background = '#666';
+            downloadWhenReadyBtn.style.marginTop = '10px';
+            downloadWhenReadyBtn.onclick = function(e) {
+                e.preventDefault();
+                alert('Arquivo ainda não está pronto. Use "Acompanhar Progresso" para verificar o status.');
+            };
+
+            // Inserir após o botão existente
+            downloadBtn.parentNode.insertBefore(downloadWhenReadyBtn, downloadBtn.nextSibling);
         }
 
         // Mostrar erro
@@ -745,6 +826,7 @@ def convert():
     """Processa a conversão do arquivo."""
     file = request.files.get("file")
     target_format = request.form.get("target_format")
+    use_queue = request.form.get("use_queue", "false").lower() == "true"
 
     # Verificar se é uma requisição AJAX
     is_ajax = request.headers.get('Content-Type', '').startswith('multipart/form-data') and request.headers.get('X-Requested-With') == 'XMLHttpRequest'
@@ -761,6 +843,16 @@ def convert():
         flash("Selecione o formato de destino.")
         return redirect(url_for("home"))
 
+    # ========== NOVO: SUPORTE À FILA v2.2.0 ==========
+    if use_queue:
+        return _convert_with_queue(file, target_format, is_ajax)
+
+    # ========== LEGACY: CONVERSÃO IMEDIATA ==========
+    return _convert_immediate(file, target_format, is_ajax)
+
+
+def _convert_immediate(file, target_format: str, is_ajax: bool):
+    """Conversão imediata (modo legacy)."""
     try:
         # Validar tipo do arquivo
         file_type, ext = validate_file_type(file.filename)
@@ -822,8 +914,97 @@ def convert():
         flash(error_msg)
         return redirect(url_for("home"))
 
-@app.errorhandler(RequestEntityTooLarge)
-def handle_large_file(error):
-    """Tratamento de arquivos muito grandes."""
-    flash(f"Arquivo muito grande. Limite: {PER_FILE_LIMIT_MB} MB.")
-    return redirect(url_for("home"))
+
+def _convert_with_queue(file, target_format: str, is_ajax: bool):
+    """Conversão via fila (modo novo v2.2.0)."""
+    try:
+        # Importar gerenciadores de fila
+        from main import queue_manager
+
+        # Salvar arquivo permanentemente na pasta uploads
+        filename = sanitize_filename(file.filename)
+        file_path = os.path.join("uploads", filename)
+        os.makedirs("uploads", exist_ok=True)
+        file.save(file_path)
+
+        # Obter tamanho em MB
+        file_size_mb = os.path.getsize(file_path) / (1024 * 1024)
+
+        # Obter IP do usuário
+        user_ip = request.remote_addr
+
+        # Adicionar à fila
+        task_id = queue_manager.add_task(
+            filename=filename,
+            target_format=target_format,
+            user_ip=user_ip,
+            file_size_mb=file_size_mb
+        )
+
+        # Obter posição na fila
+        stats = queue_manager.get_queue_stats()
+        queue_position = stats['queued']
+
+        # Resposta de sucesso
+        response_data = {
+            "success": True,
+            "task_id": task_id,
+            "status": "queued",
+            "filename": filename,
+            "queue_position": queue_position,
+            "file_size_mb": round(file_size_mb, 2),
+            "message": f"Arquivo adicionado à fila. Posição: {queue_position}"
+        }
+
+        if is_ajax:
+            return response_data, 201
+        else:
+            flash(response_data["message"])
+            return redirect(url_for("home"))
+
+    except Exception as e:
+        error_msg = f"Erro ao adicionar à fila: {str(e)}"
+        if is_ajax:
+            return {"success": False, "error": error_msg}, 500
+        flash(error_msg)
+        return redirect(url_for("home"))
+
+@app.route("/download/<task_id>", methods=["GET"])
+def download_converted(task_id):
+    """Download de arquivo convertido via fila."""
+    try:
+        from main import queue_manager
+
+        # Obter status da tarefa
+        task = queue_manager.get_status(task_id)
+        if not task:
+            flash("Tarefa não encontrada.")
+            return redirect(url_for("home"))
+
+        if task['status'] != 'completed':
+            flash(f"Tarefa ainda não concluída. Status: {task['status']}")
+            return redirect(url_for("home"))
+
+        filename = task['filename_result']
+        if not filename:
+            flash("Arquivo convertido não encontrado.")
+            return redirect(url_for("home"))
+
+        # Procurar arquivo nos exports
+        exports_dir = config.EXPORTS_DIR
+        for file_path in os.listdir(exports_dir):
+            if filename in file_path:
+                full_path = os.path.join(exports_dir, file_path)
+                return send_file(
+                    full_path,
+                    mimetype="application/octet-stream",
+                    as_attachment=True,
+                    download_name=filename
+                )
+
+        flash("Arquivo convertido não encontrado no servidor.")
+        return redirect(url_for("home"))
+
+    except Exception as e:
+        flash(f"Erro ao fazer download: {str(e)}")
+        return redirect(url_for("home"))

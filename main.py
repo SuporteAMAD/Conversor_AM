@@ -30,6 +30,7 @@ import os
 import tempfile
 import hashlib
 import re
+import logging
 from abc import ABC, abstractmethod
 from typing import Optional, Tuple
 from datetime import datetime
@@ -729,5 +730,97 @@ try:
 except ImportError as e:
     print(f"⚠️  Aviso ao importar rotas: {e}")
 
+# ========== INICIALIZAÇÃO DA FILA v2.2.0 ==========
+from queue_manager import QueueManager
+from worker import init_worker, start_worker, stop_worker
+from websocket_manager import get_ws_manager
+from rotas.queue_routes import register_queue_routes
+
+# Inicializar gerenciadores de fila
+queue_manager = QueueManager()
+ws_manager = get_ws_manager()
+
+def create_conversion_func():
+    """
+    Factory para criar função de conversão que atualiza progresso.
+    Esta função será chamada pelo worker para processar tarefas da fila.
+    """
+    def convert_with_progress(task_id: str, task: dict):
+        """
+        Converte arquivo e atualiza progresso via WebSocket.
+
+        Args:
+            task_id: ID da tarefa
+            task: Dict com dados da tarefa (filename_original, target_format, etc.)
+        """
+        try:
+            filename = task['filename_original']
+            target_format = task['target_format']
+            file_path = os.path.join("uploads", filename)
+
+            # Verificar se arquivo existe
+            if not os.path.exists(file_path):
+                raise FileNotFoundError(f"Arquivo não encontrado: {file_path}")
+
+            # Enviar progresso 10% - Iniciando
+            ws_manager.send_progress(task_id, 10, 30)
+
+            # Validar tipo do arquivo
+            file_type, ext = validate_file_type(filename)
+
+            # Enviar progresso 20% - Validação OK
+            ws_manager.send_progress(task_id, 20, 25)
+
+            # Obter conversor apropriado
+            converter = get_converter(file_type, target_format, file_path)
+            if not converter:
+                raise ValueError(f"Conversão {file_type} → {target_format} não suportada")
+
+            # Enviar progresso 30% - Conversor preparado
+            ws_manager.send_progress(task_id, 30, 20)
+
+            # Realizar conversão
+            with converter:
+                converted_data = converter.convert()
+
+            # Enviar progresso 80% - Conversão concluída
+            ws_manager.send_progress(task_id, 80, 10)
+
+            # Salvar cópia para auditoria
+            output_filename = converter._get_output_filename(sanitize_filename(filename))
+            save_converted_copy(output_filename, converted_data)
+
+            # Enviar progresso 100% - Finalizando
+            ws_manager.send_progress(task_id, 100, 0)
+
+            # Retornar sucesso
+            return True, {"filename": output_filename}, None
+
+        except Exception as e:
+            logger = logging.getLogger(__name__)
+            logger.error(f"Erro na conversão {task_id}: {e}", exc_info=True)
+            return False, None, str(e)
+
+    return convert_with_progress
+
+# Inicializar worker com função de conversão
+worker = init_worker(
+    conversion_func=create_conversion_func(),
+    queue_manager=queue_manager,
+    max_concurrent=2  # Ajustar conforme CPU/RAM
+)
+
+# Registrar rotas da fila
+register_queue_routes(app, conversion_func=create_conversion_func(), upload_folder="uploads")
+
 if __name__ == "__main__":
-    app.run(debug=getattr(config, 'DEBUG', False), host=config.HOST, port=config.PORT)
+    # Iniciar worker em background
+    start_worker()
+    print("🚀 Worker iniciado - Fila v2.2.0 ativa")
+
+    try:
+        app.run(debug=getattr(config, 'DEBUG', False), host=config.HOST, port=config.PORT)
+    finally:
+        # Parar worker ao sair
+        stop_worker()
+        print("🛑 Worker parado")
